@@ -12,11 +12,23 @@ public enum Roles {
             this.authority = authority;
         }
 
-        public int getAuthority() {
-            return authority;
+        public static boolean canGrantRole(String userRole, String targetRole, String grantedRole) {
+            if(userRole.equals(GA.toString())) {
+                if(Roles.valueOf(targetRole).authority <= Roles.valueOf(GBO.toString()).authority)
+                    return Roles.valueOf(grantedRole).authority <= GBO.authority;
+                else
+                    return false;
+            }
+            else
+                return true;
         }
 
-        public int valueOf() {
-            return authority;
+        public static boolean canGrantState(String userRole, String targetRole) {
+            if(userRole.equals(SU.toString()))
+                return true;
+            else if(userRole.equals(USER.toString()))
+                return false;
+            else
+                return Roles.valueOf(userRole).authority > Roles.valueOf(targetRole).authority;
         }
 }

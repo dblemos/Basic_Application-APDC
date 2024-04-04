@@ -10,6 +10,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.core.Response;
 
 import pt.unl.fct.di.apdc.firstwebapp.util.GrantRoleData;
+import pt.unl.fct.di.apdc.firstwebapp.util.GrantStateData;
 import pt.unl.fct.di.apdc.firstwebapp.util.Roles;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -38,11 +39,11 @@ public class GrantResource {
     public Response grantRole(GrantRoleData data) {
         Transaction txn = datastore.newTransaction();
         Key userKey = datastore.newKeyFactory().setKind("User").newKey(data.username);
-        Key targetKey = datastore.newKeyFactory().setKind("User").newKey(data.target_username);
+        Key targetKey = datastore.newKeyFactory().setKind("User").newKey(data.targetUsername);
         Key tokenKey = datastore.newKeyFactory().setKind("Token").newKey(data.username);
 
         try {
-            LOG.fine("Grant attempt by user: " + data.username);
+            LOG.fine("Role grant attempt by user: " + data.username);
 
             if(!data.validGrant())
                 return Response.status(Response.Status.BAD_REQUEST).entity("Missing or wrong parameter.").build();
@@ -64,13 +65,13 @@ public class GrantResource {
             if(!data.token.tokenID.equals(token.getString("tokenID")))
                 return Response.status(Response.Status.FORBIDDEN).entity("Invalid token.").build();
 
-            if(!user.getString("role").equals(Roles.GBO.toString()) || !user.getString("role").equals(Roles.USER.toString()))
+            if(user.getString("role").equals(Roles.GBO.toString()) || user.getString("role").equals(Roles.USER.toString()))
                 return Response.status(Response.Status.FORBIDDEN).entity("User does not have permission to grant roles.").build();
 
-            if(!canGrantRole(user.getString("role"), targetUser.getString("role"), data.role.toUpperCase()))
+            if(!Roles.canGrantRole(user.getString("role"), targetUser.getString("role"), data.role.toUpperCase()))
                 return Response.status(Response.Status.FORBIDDEN).entity("User does not have permission to grant the given role.").build();
 
-            targetUser = Entity.newBuilder(targetKey)
+            targetUser = Entity.newBuilder(targetKey, targetUser)
             .set("role", data.role.toUpperCase())
             .build();
 
@@ -87,16 +88,59 @@ public class GrantResource {
         }
     }
 
-    private boolean canGrantRole(String user_role, String target_role, String granted_role) {
-        if(user_role.equals(Roles.GA.toString())) {
-            if(Roles.valueOf(target_role).getAuthority() <= Roles.valueOf(Roles.GBO.toString()).getAuthority()) {
-                return Roles.valueOf(granted_role).getAuthority() <= Roles.GBO.getAuthority();
-            }
-            else
-                return false;
-        }
-        else {
-            return true;
+    @POST
+    @Path("/state")
+    @JsonCreator
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response grantState(GrantStateData data) {
+        Transaction txn = datastore.newTransaction();
+        Key userKey = datastore.newKeyFactory().setKind("User").newKey(data.username);
+        Key targetKey = datastore.newKeyFactory().setKind("User").newKey(data.targetUsername);
+        Key tokenKey = datastore.newKeyFactory().setKind("Token").newKey(data.username);
+
+        try {
+            LOG.fine("State grant attempt by user: " + data.username);
+
+            if(!data.validGrant())
+                return Response.status(Response.Status.BAD_REQUEST).entity("Missing or wrong parameter.").build();
+
+            if(!data.validState())
+                return Response.status(Response.Status.BAD_REQUEST).entity("Invalid state.").build();
+
+            Entity user = txn.get(userKey);
+            Entity targetUser = txn.get(targetKey);
+
+            if(user == null || targetUser == null)
+                return Response.status(Response.Status.FORBIDDEN).entity("User does not exist.").build();
+            
+            Entity token = txn.get(tokenKey);
+
+            if(token == null || token.getLong("expirationData") < System.currentTimeMillis())
+                return Response.status(Response.Status.FORBIDDEN).entity("User is not logged in.").build();
+
+            if(!data.token.tokenID.equals(token.getString("tokenID")))
+                return Response.status(Response.Status.FORBIDDEN).entity("Invalid token.").build();
+            
+            if(user.getString("role").equals(Roles.USER.toString()))
+                return Response.status(Response.Status.FORBIDDEN).entity("User does not have permission to grant states.").build();
+
+            if(!Roles.canGrantState(user.getString("role"), targetUser.getString("role")))
+                return Response.status(Response.Status.FORBIDDEN).entity("User does not have permission to grant the given state to the target user.").build();
+
+            targetUser = Entity.newBuilder(targetKey, targetUser)
+            .set("state", data.state.toUpperCase())
+            .build();
+
+            txn.update(targetUser);
+            txn.commit();
+            return Response.ok().entity("{}").build();
+
+        } catch(Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Something went wrong.").build();
+
+        } finally {
+            if(txn.isActive())
+                txn.rollback();
         }
     }
 }

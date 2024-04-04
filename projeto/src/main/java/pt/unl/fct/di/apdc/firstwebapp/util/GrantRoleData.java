@@ -7,22 +7,23 @@ public class GrantRoleData {
     
     public String username;
     public String role;
-    public String target_username;
+    public String targetUsername;
     public AuthToken token;
 
-    public GrantRoleData() { }
+    public GrantRoleData() {}
 
     @JsonCreator
-    public GrantRoleData(@JsonProperty("username") String username, @JsonProperty("target_username") String target_username, 
+    public GrantRoleData(@JsonProperty("username") String username, @JsonProperty("targetUsername") String targetUsername, 
     @JsonProperty("role") String role, @JsonProperty("token") AuthToken token) {
         this.username = username;
-        this.target_username = target_username;
+        this.targetUsername = targetUsername;
         this.role = role;
         this.token = token;
     }
 
     public boolean validGrant() {
-        return username != null && role != null && target_username != null && token != null;
+        return username != null && role != null && targetUsername != null && token != null
+        && username != targetUsername;
     }
 
     public boolean validRole() {
