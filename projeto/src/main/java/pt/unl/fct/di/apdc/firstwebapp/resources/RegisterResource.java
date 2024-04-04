@@ -1,77 +1,131 @@
 package pt.unl.fct.di.apdc.firstwebapp.resources;
 
 import java.util.logging.Logger;
+import pt.unl.fct.di.apdc.firstwebapp.util.Roles;
+import pt.unl.fct.di.apdc.firstwebapp.util.States;
 
-import javax.ws.rs.*;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.core.Response;
 
-import com.google.cloud.Timestamp;
-import com.google.cloud.datastore.*;
+import pt.unl.fct.di.apdc.firstwebapp.util.RegisterData;
+import com.google.appengine.repackaged.org.apache.commons.codec.digest.DigestUtils;
+import com.google.cloud.datastore.Datastore;
+import com.google.cloud.datastore.DatastoreOptions;
+import com.google.cloud.datastore.Key;
+import com.google.cloud.datastore.Transaction;
+import com.google.cloud.datastore.Entity;
 
-import com.google.gson.Gson;
-
-import org.apache.commons.codec.digest.DigestUtils;
-import pt.unl.fct.di.apdc.firstwebapp.resources.util.RegisterData;
 
 @Path("/register")
 @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
 public class RegisterResource {
-    /**
-     * Logger Object
-     */
-    private static final Logger LOG = Logger.getLogger(ComputationResource.class.getName());
+    Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
+    private static final Logger LOG = Logger.getLogger(RegisterResource.class.getName());
 
-    private final Gson g = new Gson();
-    private final Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
-    public RegisterResource(){}
+    public RegisterResource() { } // Nothing to be done here
+
 
     @POST
-    @Path("/v1")
+    @Path("/user")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response doRegistrationV1(RegisterData data){
-        LOG.fine("Attempt to register user:" + data.username);
-        if(!data.validRegistration())
+    public Response registerUser(RegisterData data) {
+        LOG.fine("Register attempt by user: " + data.username);
+
+        
+        if(!data.validRegistration()) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Missing or wrong parameter.").build();
+        }
+        else if(!data.validConfirmation()) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Passwords do not match.").build();
+        }
+
         Transaction txn = datastore.newTransaction();
-        try{
-            //Creates an entity user form the data. THe key is username
+
+        try {
+
             Key userKey = datastore.newKeyFactory().setKind("User").newKey(data.username);
             Entity user = txn.get(userKey);
-            if(user != null){
-                txn.rollback();
-                return Response.status(Response.Status.BAD_REQUEST).entity("User already eists.").build();
-            }else{
-                user = Entity.newBuilder(userKey)
-                        .set("user_name", data.name)
-                        .set("user_pwd", DigestUtils.sha512Hex(data.password))
-                        .set("user_email", data.email)
-                        .set("user_creation_time", Timestamp.now())
-                        .build();
 
-                txn.add(user);
-                LOG.info("User registered "+ data.username);
+            // Check if the user already exists
+            if( user != null ) {
+                txn.rollback();
+                return Response.status(Response.Status.BAD_REQUEST).entity("User already exists.").build();
+            } else {
+
+                user = Entity.newBuilder(userKey)
+                .set("username", data.username)
+                .set("email", data.email)
+                .set("name", data.name)
+                .set("phone_number", data.phone_number)
+                .set("password", DigestUtils.sha256Hex(data.password))
+                .set("role", Roles.USER.toString())
+                .set("state", States.INACTIVE.toString())
+                .set("private_profile", data.private_profile == null ? "" : data.private_profile)
+                .set("ocupation", data.ocupation == null ? "" : data.ocupation)
+                .set("workplace", data.workplace == null ? "" : data.workplace)
+                .set("address", data.address == null ? "" : data.address)
+                .set("zip_code", data.zip_code == null ? "" : data.zip_code)
+                .set("tax_number", data.tax_number == null ? "" : data.tax_number)
+                .build();
+
+                txn.put(user);
+                LOG.info("User registered: " + data.username);
                 txn.commit();
                 return Response.ok("{}").build();
             }
-
-        }finally {
-            if(txn.isActive()){
+        } finally {
+            if(txn.isActive()) {
                 txn.rollback();
             }
         }
-
     }
 
-    @GET
-    @Path("/{username}")
-    public Response doLogin(@PathParam("username") String username){
-        if(username.trim().equals("jleitao")){
-            return Response.ok().entity(g.toJson(false)).build();
-        }else{
-            return Response.ok().entity(g.toJson(true)).build();
+    @POST
+    @Path("/su")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response registerSU(RegisterData data) {
+        Transaction txn = datastore.newTransaction();
+
+        try {
+
+            Key userKey = datastore.newKeyFactory().setKind("User").newKey("root");
+            Entity user = txn.get(userKey);
+
+            // Check if the user already exists
+            if( user != null ) {
+                txn.rollback();
+                return Response.status(Response.Status.BAD_REQUEST).entity("SU already exists.").build();
+            } else {
+
+                user = Entity.newBuilder(userKey)
+                .set("username", "root")
+                .set("email", "")
+                .set("name", "")
+                .set("phone_number", "")
+                .set("password", DigestUtils.sha256Hex("pwd"))
+                .set("role", Roles.SU.toString())
+                .set("state", States.ACTIVE.toString())
+                .set("private_profile", "")
+                .set("ocupation", "")
+                .set("workplace", "")
+                .set("address", "")
+                .set("zip_code", "")
+                .set("tax_number", "")
+                .build();
+
+                txn.put(user);
+                LOG.info("SU registered");
+                txn.commit();
+                return Response.ok("{}").build();
+            }
+        } finally {
+            if(txn.isActive()) {
+                txn.rollback();
+            }
         }
-
     }
-
 }
