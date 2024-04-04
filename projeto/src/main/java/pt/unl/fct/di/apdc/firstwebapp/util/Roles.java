@@ -31,4 +31,15 @@ public enum Roles {
             else
                 return Roles.valueOf(userRole).authority > Roles.valueOf(targetRole).authority;
         }
+
+        public static boolean canRemoveUser(String userRole, String targetRole) {
+            if(userRole.equals(SU.toString()))
+                return true;
+            else if(userRole.equals(GBO.toString() ))
+                return false;
+            else if (userRole.equals(USER.toString()))
+                return true;
+            else
+                return Roles.valueOf(userRole).authority > Roles.valueOf(targetRole).authority;
+        }
 }
