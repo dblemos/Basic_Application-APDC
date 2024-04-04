@@ -14,5 +14,9 @@ public enum Roles {
 
         public int getAuthority() {
             return authority;
-        }        
+        }
+
+        public int valueOf() {
+            return authority;
+        }
 }
