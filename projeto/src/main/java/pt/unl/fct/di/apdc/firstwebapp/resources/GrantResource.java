@@ -23,7 +23,7 @@ import com.google.cloud.datastore.Key;
 @Path("/grant")
 @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
 public class GrantResource {
-     Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
+    Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
     
     /**
      * Logger Object
