@@ -82,7 +82,7 @@ public class LoginResource {
             }
 
             LOG.info("User " + data.username + " logged in.");
-            return Response.ok("{}").entity(token).build();
+            return Response.ok(g.toJson(token)).build();
 
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Something went wrong. Try again later.").build();

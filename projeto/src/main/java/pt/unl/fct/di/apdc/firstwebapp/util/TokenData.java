@@ -3,13 +3,13 @@ package pt.unl.fct.di.apdc.firstwebapp.util;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class LogoutData {
+public class TokenData {
     public AuthToken token;
 
-    public LogoutData() {}
+    public TokenData() {}
 
     @JsonCreator
-    public LogoutData(@JsonProperty("token") AuthToken token) {
+    public TokenData(@JsonProperty("token") AuthToken token) {
         this.token = token;
     }
 

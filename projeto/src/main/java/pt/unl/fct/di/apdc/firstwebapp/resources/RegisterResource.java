@@ -3,6 +3,7 @@ package pt.unl.fct.di.apdc.firstwebapp.resources;
 import java.util.logging.Logger;
 import pt.unl.fct.di.apdc.firstwebapp.util.Roles;
 import pt.unl.fct.di.apdc.firstwebapp.util.States;
+import pt.unl.fct.di.apdc.firstwebapp.util.Profile;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -60,16 +61,16 @@ public class RegisterResource {
                 .set("username", data.username)
                 .set("email", data.email)
                 .set("name", data.name)
-                .set("phone_number", data.phone_number)
+                .set("phoneNumber", data.phoneNumber)
                 .set("password", DigestUtils.sha256Hex(data.password))
                 .set("role", Roles.USER.toString())
                 .set("state", States.INACTIVE.toString())
-                .set("private_profile", data.private_profile == null ? "" : data.private_profile)
+                .set("profile", data.profile == null ? Profile.PRIVATE.toString() : data.profile.toUpperCase())
                 .set("ocupation", data.ocupation == null ? "" : data.ocupation)
                 .set("workplace", data.workplace == null ? "" : data.workplace)
                 .set("address", data.address == null ? "" : data.address)
-                .set("zip_code", data.zip_code == null ? "" : data.zip_code)
-                .set("tax_number", data.tax_number == null ? "" : data.tax_number)
+                .set("zipCode", data.zipCode == null ? "" : data.zipCode)
+                .set("taxNumber", data.taxNumber == null ? "" : data.taxNumber)
                 .build();
 
                 txn.put(user);
@@ -109,12 +110,12 @@ public class RegisterResource {
                 .set("password", DigestUtils.sha256Hex("pwd"))
                 .set("role", Roles.SU.toString())
                 .set("state", States.ACTIVE.toString())
-                .set("private_profile", "")
+                .set("profile", Profile.PRIVATE.toString())
                 .set("ocupation", "")
                 .set("workplace", "")
                 .set("address", "")
-                .set("zip_code", "")
-                .set("tax_number", "")
+                .set("zipCode", "")
+                .set("taxNumber", "")
                 .build();
 
                 txn.put(user);

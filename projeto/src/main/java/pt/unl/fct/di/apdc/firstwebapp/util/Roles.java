@@ -12,6 +12,10 @@ public enum Roles {
             this.authority = authority;
         }
 
+        public int getAutority() {
+            return authority;
+        }
+
         public static boolean canGrantRole(String userRole, String targetRole, String grantedRole) {
             if(userRole.equals(GA.toString())) {
                 if(Roles.valueOf(targetRole).authority <= Roles.valueOf(GBO.toString()).authority)
