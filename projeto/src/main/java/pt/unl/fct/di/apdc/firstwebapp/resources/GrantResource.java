@@ -38,12 +38,12 @@ public class GrantResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response grantRole(GrantRoleData data) {
         Transaction txn = datastore.newTransaction();
-        Key userKey = datastore.newKeyFactory().setKind("User").newKey(data.username);
+        Key userKey = datastore.newKeyFactory().setKind("User").newKey(data.token.username);
         Key targetKey = datastore.newKeyFactory().setKind("User").newKey(data.targetUsername);
-        Key tokenKey = datastore.newKeyFactory().setKind("Token").newKey(data.username);
+        Key tokenKey = datastore.newKeyFactory().setKind("Token").newKey(data.token.username);
 
         try {
-            LOG.fine("Role grant attempt by user: " + data.username);
+            LOG.fine("Role grant attempt by user: " + data.token.username);
 
             if(!data.validGrant())
                 return Response.status(Response.Status.BAD_REQUEST).entity("Missing or wrong parameter.").build();
@@ -94,12 +94,12 @@ public class GrantResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response grantState(GrantStateData data) {
         Transaction txn = datastore.newTransaction();
-        Key userKey = datastore.newKeyFactory().setKind("User").newKey(data.username);
+        Key userKey = datastore.newKeyFactory().setKind("User").newKey(data.token.username);
         Key targetKey = datastore.newKeyFactory().setKind("User").newKey(data.targetUsername);
-        Key tokenKey = datastore.newKeyFactory().setKind("Token").newKey(data.username);
+        Key tokenKey = datastore.newKeyFactory().setKind("Token").newKey(data.token.username);
 
         try {
-            LOG.fine("State grant attempt by user: " + data.username);
+            LOG.fine("State grant attempt by user: " + data.token.username);
 
             if(!data.validGrant())
                 return Response.status(Response.Status.BAD_REQUEST).entity("Missing or wrong parameter.").build();

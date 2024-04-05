@@ -36,10 +36,10 @@ public class NewPasswordResource {
     @JsonCreator
     @Consumes(MediaType.APPLICATION_JSON)
     public Response newPassword(NewPasswordData data) {
-        LOG.fine("User removal attempt by user: " + data.username);
+        LOG.fine("User removal attempt by user: " + data.token.username);
         Transaction txn = datastore.newTransaction();
-        Key userKey = datastore.newKeyFactory().setKind("User").newKey(data.username);
-        Key tokenKey = datastore.newKeyFactory().setKind("Token").newKey(data.username);
+        Key userKey = datastore.newKeyFactory().setKind("User").newKey(data.token.username);
+        Key tokenKey = datastore.newKeyFactory().setKind("Token").newKey(data.token.username);
 
         try {
             if(!data.validRequest())

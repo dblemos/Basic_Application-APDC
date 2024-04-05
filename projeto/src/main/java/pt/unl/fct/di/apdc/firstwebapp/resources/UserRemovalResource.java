@@ -36,11 +36,11 @@ public class UserRemovalResource {
     @JsonCreator
     @Consumes(MediaType.APPLICATION_JSON)
     public Response removeUser(UserRemovalData data) {
-        LOG.fine("User removal attempt by user: " + data.username);
+        LOG.fine("User removal attempt by user: " + data.token.username);
         Transaction txn = datastore.newTransaction();
-        Key userKey = datastore.newKeyFactory().setKind("User").newKey(data.username);
+        Key userKey = datastore.newKeyFactory().setKind("User").newKey(data.token.username);
         Key targetKey = datastore.newKeyFactory().setKind("User").newKey(data.targetUsername);
-        Key tokenKey = datastore.newKeyFactory().setKind("Token").newKey(data.username);
+        Key tokenKey = datastore.newKeyFactory().setKind("Token").newKey(data.token.username);
 
         try {
             if(!data.validRequest())
@@ -60,11 +60,11 @@ public class UserRemovalResource {
             if(!data.token.tokenID.equals(token.getString("tokenID")))
                 return Response.status(Response.Status.FORBIDDEN).entity("Invalid token.").build();
 
-            if(data.username.equals(data.targetUsername) && (user.getString("role").equals(Roles.GA.toString()) ||
+            if(data.token.username.equals(data.targetUsername) && (user.getString("role").equals(Roles.GA.toString()) ||
                 user.getString("role").equals(Roles.GBO.toString())))
                 return Response.status(Response.Status.FORBIDDEN).entity("Non authorized operation.").build();
             
-            if(!data.username.equals(data.targetUsername) && user.getString("role").equals(Roles.USER.toString()))
+            if(!data.token.username.equals(data.targetUsername) && user.getString("role").equals(Roles.USER.toString()))
                 return Response.status(Response.Status.FORBIDDEN).entity("Non authorized operation.").build();
 
             if(!Roles.canRemoveUser(user.getString("role"), targetUser.getString("role")))

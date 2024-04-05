@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class GrantRoleData {
     
-    public String username;
     public String role;
     public String targetUsername;
     public AuthToken token;
@@ -13,17 +12,16 @@ public class GrantRoleData {
     public GrantRoleData() {}
 
     @JsonCreator
-    public GrantRoleData(@JsonProperty("username") String username, @JsonProperty("targetUsername") String targetUsername, 
+    public GrantRoleData(@JsonProperty("targetUsername") String targetUsername, 
     @JsonProperty("role") String role, @JsonProperty("token") AuthToken token) {
-        this.username = username;
         this.targetUsername = targetUsername;
         this.role = role;
         this.token = token;
     }
 
     public boolean validGrant() {
-        return username != null && role != null && targetUsername != null && token != null
-        && username != targetUsername;
+        return role != null && targetUsername != null && token != null
+        && token.username != targetUsername;
     }
 
     public boolean validRole() {
