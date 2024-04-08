@@ -72,7 +72,7 @@ public class GrantResource {
                 return Response.status(Response.Status.FORBIDDEN).entity("User does not have permission to grant the given role.").build();
 
             targetUser = Entity.newBuilder(targetKey, targetUser)
-            .set("role", data.role.toUpperCase())
+            .set("role", data.role)
             .build();
 
             txn.update(targetUser);

@@ -10,7 +10,7 @@ public class UserRemovalData {
     public UserRemovalData() {}
 
     @JsonCreator
-    public UserRemovalData(@JsonProperty("username") String username, @JsonProperty("targetUsername") String targetUsername,
+    public UserRemovalData(@JsonProperty("targetUsername") String targetUsername,
      @JsonProperty("token") AuthToken token) {
         this.targetUsername = targetUsername;
         this.token = token;

@@ -54,7 +54,7 @@ public class RegisterResource {
             // Check if the user already exists
             if( user != null ) {
                 txn.rollback();
-                return Response.status(Response.Status.BAD_REQUEST).entity("User already exists.").build();
+                return Response.status(Response.Status.FORBIDDEN).entity("User already exists.").build();
             } else {
 
                 user = Entity.newBuilder(userKey)

@@ -8,6 +8,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.core.Response;
+import org.apache.commons.codec.digest.DigestUtils;
 
 import pt.unl.fct.di.apdc.firstwebapp.util.ModifyAttributesData;
 import pt.unl.fct.di.apdc.firstwebapp.util.Roles;
@@ -63,15 +64,16 @@ public class ModifyAttributesResource {
                 return Response.status(Response.Status.FORBIDDEN).entity("Non authorized operation.").build();
 
             targetUser = Entity.newBuilder(targetKey, targetUser)
-                .set("email", data.email != null ? data.email : targetUser.getString("email"))
-                .set("name", data.name != null ? data.name : targetUser.getString("name"))
-                .set("phoneNumber", data.phoneNumber != null ? data.phoneNumber : targetUser.getString("phoneNumber"))
-                .set("profile", data.profile != null ? data.profile : targetUser.getString("profile"))
-                .set("ocupation", data.ocupation != null ? data.ocupation : targetUser.getString("ocupation"))
-                .set("workplace", data.workplace != null ? data.workplace : targetUser.getString("workplace"))
-                .set("address", data.address != null ? data.address : targetUser.getString("address"))
-                .set("zipCode", data.zipCode != null ? data.zipCode : targetUser.getString("zipCode"))
-                .set("taxNumber", data.taxNumber != null ? data.taxNumber : targetUser.getString("taxNumber"))
+                .set("email", data.email != "" ? data.email : targetUser.getString("email"))
+                .set("name", data.name != "" ? data.name : targetUser.getString("name"))
+                .set("phoneNumber", data.phoneNumber != "" ? data.phoneNumber : targetUser.getString("phoneNumber"))
+                .set("password", data.password != "" ? DigestUtils.sha256Hex(data.password) : targetUser.getString("password"))
+                .set("profile", data.profile != "" ? data.profile.toUpperCase() : targetUser.getString("profile"))
+                .set("ocupation", data.ocupation != "" ? data.ocupation : targetUser.getString("ocupation"))
+                .set("workplace", data.workplace != "" ? data.workplace : targetUser.getString("workplace"))
+                .set("address", data.address != "" ? data.address : targetUser.getString("address"))
+                .set("zipCode", data.zipCode != "" ? data.zipCode : targetUser.getString("zipCode"))
+                .set("taxNumber", data.taxNumber != "" ? data.taxNumber : targetUser.getString("taxNumber"))
                 .build();
 
             txn.update(targetUser);
